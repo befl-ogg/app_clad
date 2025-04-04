@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  app_clad:
+    build: snake-pole-control
+    mem_limit: 512m
+    ports:
+      - "8080:8080"
+    environment:
+      BASE_URL: "${BASE_URL}"
+      JWT_EXPIRATION: "${JWT_EXPIRATION}"
+      JWT_REFRESH_EXPIRATION: "${JWT_REFRESH_EXPIRATION}"
+      JWT_SECRET: "${JWT_SECRET}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_SERVER_SCHEMA: "${MYSQL_SERVER_SCHEMA}"
+      MYSQL_SERVER_URL: "${MYSQL_SERVER_URL}"
+      MYSQL_USER: "${MYSQL_USER}"
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: "${MYSQL_IMAGE}"
+    restart: always
+    environment:
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_USER: "${MYSQL_DBUSER}"
+      MYSQL_PASSWORD: "${MYSQL_DBPASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-psaas" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
